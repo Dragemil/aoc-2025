@@ -37,9 +37,19 @@ public static class Solution
 
     private static bool IsSequential(string id)
     {
-        var halfSize = id.Length / 2;
+        var firstSize = id.Length / 2;
 
-        return id[..halfSize] == id[halfSize..];
+        for (var i = firstSize; i >= 1; i--)
+        {
+            var isSequential = id.Chunk(i).Select(p => new string(p)).Distinct().Take(2).Count() == 1;
+
+            if (isSequential)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
