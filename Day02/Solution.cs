@@ -4,7 +4,7 @@ public static class Solution
 {
     public static void Run()
     {
-        var input = File.ReadAllText("Day02/t_input.txt");
+        var input = File.ReadAllText("Day02/input.txt");
 
         var ranges = input.Split(',');
 
@@ -37,19 +37,9 @@ public static class Solution
 
     private static bool IsSequential(string id)
     {
-        var firstSize = id.Length / 2;
+        var halfSize = id.Length / 2;
 
-        for (var i = firstSize; i >= 1; i--)
-        {
-            var isSequential = id.Chunk(i).Select(p => new string(p)).Distinct().Take(2).Count() == 1;
-
-            if (isSequential)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return id[..halfSize] == id[halfSize..];
     }
 }
 
