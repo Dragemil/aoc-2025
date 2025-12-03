@@ -11,12 +11,6 @@
   <ItemGroup>
     <None Include="Day*/input.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Day*/t_input.txt" CopyToOutputDirectory="PreserveNewest" />
-    <None Update="Day02\input.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Day02\t_input.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>
