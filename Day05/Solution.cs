@@ -5,17 +5,28 @@ public static class Solution
     public static void Run()
     {
         var input = File.ReadAllLines("Day05/input.txt");
-        var i = 0;
-        var idRanges = new List<IdRange>();
+        var idRanges = new LinkedList<IdRange>();
 
-        while (input[i] != "")
+        foreach (var s in input.TakeWhile(s => s != ""))
         {
-            idRanges.Add(IdRange.Parse(input[i]));
-            i++;
+            var idRange = IdRange.Parse(s);
+            var node = idRanges.First;
+
+            while (node is not null)
+            {
+                var prevNode = node;
+                node = node.Next;
+                if (idRange.Intersects(prevNode.Value))
+                {
+                    idRange = idRange.Merge(prevNode.Value);
+                    idRanges.Remove(prevNode);
+                }
+            }
+
+            idRanges.AddFirst(idRange);
         }
 
-        var ids = input[(i + 1)..].Select(long.Parse);
-        var correctIdsCount = ids.Count(id => idRanges.Any(ir => ir.Contains(id)));
+        var correctIdsCount = idRanges.Sum(ir => ir.Size);
 
         Console.WriteLine($"Correct IDs count: {correctIdsCount}");
     }
@@ -28,7 +39,19 @@ public static class Solution
             return new(long.Parse(ss[0]), long.Parse(ss[1]));
         }
 
+        public IdRange Merge(IdRange other) => new(Math.Min(Left, other.Left), Math.Max(Right, other.Right));
+
+        public bool Intersects(IdRange other)
+        {
+            return Contains(other.Left)
+                || Contains(other.Right)
+                || other.Contains(Left)
+                || other.Contains(Right);
+        }
+
         public bool Contains(long id) => id >= Left && id <= Right;
+
+        public long Size => Right - Left + 1;
     }
 }
 
