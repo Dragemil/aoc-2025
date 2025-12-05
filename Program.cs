@@ -1,1 +1,1 @@
-﻿Day04.Solution.Run();
+﻿Day05.Solution.Run();
