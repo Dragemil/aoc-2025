@@ -17,24 +17,12 @@ public static class Solution
             foreach (var (beam, timelines) in toSplit)
             {
                 beamTimelines.Remove(beam);
-                beamTimelines.AddOrUpdate(beam - 1, timelines, t => t + timelines);
-                beamTimelines.AddOrUpdate(beam + 1, timelines, t => t + timelines);
+                beamTimelines[beam - 1] = beamTimelines.GetValueOrDefault(beam - 1) + timelines;
+                beamTimelines[beam + 1] = beamTimelines.GetValueOrDefault(beam + 1) + timelines;
             }
         }
 
         Console.WriteLine($"Tachyon beam timelines count: {timelinesCount}");
-    }
-
-    private static void AddOrUpdate<K, V>(this IDictionary<K, V> dict, K key, V toAdd, Func<V, V> toUpdate)
-    {
-        if (dict.TryGetValue(key, out var value))
-        {
-            dict[key] = toUpdate(value);
-        }
-        else
-        {
-            dict[key] = toAdd;
-        }
     }
 }
 
