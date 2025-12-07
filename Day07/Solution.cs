@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace Day07;
 
 public static class Solution
@@ -17,12 +19,24 @@ public static class Solution
             foreach (var (beam, timelines) in toSplit)
             {
                 beamTimelines.Remove(beam);
-                beamTimelines[beam - 1] = beamTimelines.GetValueOrDefault(beam - 1) + timelines;
-                beamTimelines[beam + 1] = beamTimelines.GetValueOrDefault(beam + 1) + timelines;
+                beamTimelines.AddOrUpdate(beam - 1, timelines, t => t + timelines);
+                beamTimelines.AddOrUpdate(beam + 1, timelines, t => t + timelines);
             }
         }
 
         Console.WriteLine($"Tachyon beam timelines count: {timelinesCount}");
+    }
+    
+    private static void AddOrUpdate<TKey, TValue>(
+        this Dictionary<TKey, TValue> dict,
+        TKey key, 
+        TValue toAdd, 
+        Func<TValue, TValue> toUpdate)
+        where TKey : notnull
+        where TValue : struct
+    {
+        ref var valRef = ref CollectionsMarshal.GetValueRefOrAddDefault(dict, key, out var exists);
+        valRef = exists ? toUpdate(valRef) : toAdd;
     }
 }
 
