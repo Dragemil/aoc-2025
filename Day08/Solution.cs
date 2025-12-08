@@ -5,6 +5,8 @@ namespace Day08;
 
 public static class Solution
 {
+    private const int ConnectionCount = 1000;
+    
     public static void Run()
     {
         var input = File.ReadAllLines("Day08/input.txt");
@@ -18,51 +20,43 @@ public static class Solution
             }
         }
 
-        var circuitsCount = jBoxes.Count;
-        Tuple<JBox, JBox> lastJBoxesConnected = null!;
-        var orderedDistances = distances.OrderBy(d => d.Distance);
+        var jBoxToCircuit = jBoxes.ToDictionary(j => j, j => new HashSet<JBox> { j });
+        var orderedDistances = distances.OrderBy(d => d.Distance).Take(ConnectionCount);
         foreach (var (jBox1, jBox2, _) in orderedDistances)
         {
-            if (jBox1.Circuit == jBox2.Circuit)
+            var circuit1 = jBoxToCircuit[jBox1];
+            var circuit2 = jBoxToCircuit[jBox2];
+
+            if (circuit1 == circuit2)
             {
                 continue;
             }
 
-            var (bigCircuit, smallCircuit) = jBox1.Circuit.Count >= jBox2.Circuit.Count
-                ? (jBox1.Circuit, jBox2.Circuit)
-                : (jBox2.Circuit, jBox1.Circuit);
+            var (bigCircuit, smallCircuit) =
+                circuit1.Count >= circuit2.Count ? (circuit1, circuit2) : (circuit2, circuit1);
             
             bigCircuit.UnionWith(smallCircuit);
             foreach (var jBox in smallCircuit)
             {
-                jBox.Circuit = bigCircuit;
-            }
-
-            circuitsCount--;
-            if (circuitsCount == 1)
-            {
-                lastJBoxesConnected = new(jBox1, jBox2);
-                break;
+                jBoxToCircuit[jBox] = bigCircuit;
             }
         }
 
-        var xMul = (long)lastJBoxesConnected.Item1.Vec.X * (long)lastJBoxesConnected.Item2.Vec.X;
-        Console.WriteLine($"Last Junction Boxes connected to circuit X multiplication: {xMul}");
+        var circuitMul = jBoxToCircuit.Values
+            .Distinct()
+            .OrderByDescending(c => c.Count)
+            .Take(3)
+            .Aggregate(1, (mul, c) => mul * c.Count);
+
+        Console.WriteLine($"Top 3 circuits size product: {circuitMul}");
     }
 
-    private readonly record struct JBoxDistance(JBox J1, JBox J2, float Distance);
+    private readonly record struct JBoxDistance(JBox J1, JBox J2, double Distance);
 
-    [DebuggerDisplay("{Vec}")]
-    private class JBox
+    [DebuggerDisplay("X = {X}, Y = {Y}, Z = {Z}")]
+    private class JBox(Vector3 vec)
     {
-        private JBox(Vector3 vec)
-        {
-            Vec = vec;
-            Circuit = [this];
-        }
-
-        public Vector3 Vec { get; }
-        public HashSet<JBox> Circuit { get; set; }
+        public Vector3 Vec { get; } = vec;
 
         public static JBox Parse(string str)
         {
