@@ -5,8 +5,6 @@ namespace Day08;
 
 public static class Solution
 {
-    private const int ConnectionCount = 1000;
-    
     public static void Run()
     {
         var input = File.ReadAllLines("Day08/input.txt");
@@ -20,7 +18,9 @@ public static class Solution
             }
         }
 
-        var orderedDistances = distances.OrderBy(d => d.Distance).Take(ConnectionCount);
+        var circuitsCount = jBoxes.Count;
+        Tuple<JBox, JBox> lastJBoxesConnected = null!;
+        var orderedDistances = distances.OrderBy(d => d.Distance);
         foreach (var (jBox1, jBox2, _) in orderedDistances)
         {
             if (jBox1.Circuit == jBox2.Circuit)
@@ -37,16 +37,17 @@ public static class Solution
             {
                 jBox.Circuit = bigCircuit;
             }
+
+            circuitsCount--;
+            if (circuitsCount == 1)
+            {
+                lastJBoxesConnected = new(jBox1, jBox2);
+                break;
+            }
         }
 
-        var circuitMul = jBoxes
-            .Select(jb => jb.Circuit)
-            .Distinct()
-            .OrderByDescending(c => c.Count)
-            .Take(3)
-            .Aggregate(1, (mul, c) => mul * c.Count);
-
-        Console.WriteLine($"Top 3 circuits size product: {circuitMul}");
+        var xMul = (long)lastJBoxesConnected.Item1.Vec.X * (long)lastJBoxesConnected.Item2.Vec.X;
+        Console.WriteLine($"Last Junction Boxes connected to circuit X multiplication: {xMul}");
     }
 
     private readonly record struct JBoxDistance(JBox J1, JBox J2, float Distance);
