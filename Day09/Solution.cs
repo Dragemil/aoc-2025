@@ -4,7 +4,7 @@ public static class Solution
 {
     public static void Run()
     {
-        var input = File.ReadAllLines("Day09/t_input.txt");
+        var input = File.ReadAllLines("Day09/input.txt");
         var points = input.Select(Point.Parse).ToList();
         var shiftedPoints = points.ZipShift();
 
@@ -12,7 +12,6 @@ public static class Solution
         BuildRangeSetDicts(shiftedPoints, horizontalRanges, verticalRanges);
 
         var eligiblePointPairs = points
-            // .Join(points, _ => true, _ => true, (p1, p2) => (p1, p2))
             .Index()
             .SelectMany(p => points.Skip(p.Index + 1), (tuple, point) => (p1: tuple.Item, p2: point))
             .Where(ps => ContainsPeriphery(ps.p1, ps.p2))
@@ -22,8 +21,6 @@ public static class Solution
         var maxArea = Point.Area(eligiblePointPairs[0].p1, eligiblePointPairs[0].p2);
         
         Console.WriteLine($"Max rectangle area: {maxArea}");
-        // pt. 1 == 4759420470 
-        // 160600236 -> too low
 
         bool ContainsPeriphery(Point p1, Point p2)
         {
@@ -77,9 +74,14 @@ public static class Solution
         {
             var dict = directedRange.IsVertical ? horizontalRanges : verticalRanges;
             var oppositeRanges = dirRangesLookup[directedRange.OppositeDirection()];
+            Func<DirectedRange, bool> correctSide =
+                directedRange.Direction is Direction.Up or Direction.Left
+                    ? other => directedRange.Hook > other.Hook
+                    : other => directedRange.Hook < other.Hook;
             foreach (var rangeEnd in new[] { directedRange.Range.Small, directedRange.Range.Big })
             {
-                var closestRange = oppositeRanges.Where(dr => dr.Range.Contains(rangeEnd))
+                var closestRange = oppositeRanges
+                    .Where(dr => dr.Range.Contains(rangeEnd) && correctSide(dr))
                     .Select(dr => new Range(directedRange.Hook, dr.Hook))
                     .MinBy(r => r.Size);
                 dict[rangeEnd].Add(closestRange);
